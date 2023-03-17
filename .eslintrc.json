@@ -1,0 +1,22 @@
+{
+    "env": {
+        "node": true
+    },
+    "plugins": [
+        "prettier"
+    ],
+    "extends": [
+        "airbnb-base",
+        "airbnb-typescript/base",
+        "prettier"
+    ],
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "rules": {
+        "prettier/prettier": [
+            "warn"
+        ],
+        "no-await-in-loop": "off"
+    }
+}
