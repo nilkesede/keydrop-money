@@ -162,26 +162,30 @@ class Client {
 
     private async run() {
         while (true) {
-            await this.delay();
-            this.currentTick += 1;
+            try {
+                await this.delay();
+                this.currentTick += 1;
 
-            if (this.currentTick % this.tickrate.verify === 0) {
-                Logger.info(null, 'Verifying golden codes...');
-                const golds = await this.searchForGold();
+                if (this.currentTick % this.tickrate.verify === 0) {
+                    Logger.info(null, 'Verifying golden codes...');
+                    const golds = await this.searchForGold();
 
-                if (golds.length > 0) {
-                    await Promise.all(
-                        golds.map((gold) => this.consumeGolds(gold))
-                    );
+                    if (golds.length > 0) {
+                        await Promise.all(
+                            golds.map((gold) => this.consumeGolds(gold))
+                        );
 
-                    const timeToUseAgain = 1000 * 10;
-                    await this.delay(timeToUseAgain);
-                    this.currentTick += this.tickrate.base * 10;
+                        const timeToUseAgain = 1000 * 10;
+                        await this.delay(timeToUseAgain);
+                        this.currentTick += this.tickrate.base * 10;
+                    }
                 }
-            }
 
-            if (this.currentTick % this.tickrate.updateProfile === 0) {
-                await this.updateProfiles();
+                if (this.currentTick % this.tickrate.updateProfile === 0) {
+                    await this.updateProfiles();
+                }
+            } catch (error) {
+                Logger.error(null, error);
             }
         }
     }
