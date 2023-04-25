@@ -20,7 +20,7 @@ module.exports = class Keydrop {
 
   async start() {
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
+      args: ["--no-sandbox", '--window-size=800,600'],
       headless: this.headless,
     });
 
