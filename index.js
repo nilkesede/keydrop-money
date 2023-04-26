@@ -9,7 +9,7 @@ const discord = new Discord(process.env.DISCORD_TOKEN);
 const keydrop = new Keydrop();
 
 async function run() {
-  keydrop.start();
+  await keydrop.start();
 
   while (true) {
     try {
@@ -20,7 +20,7 @@ async function run() {
 
       if (goldenCode) {
         console.log(`[Discord] Received new code: ${goldenCode}`);
-        keydrop.redeem(goldenCode);
+        await keydrop.redeem(goldenCode);
       }
     } catch (error) {
       console.error(error);

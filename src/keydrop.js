@@ -20,25 +20,27 @@ module.exports = class Keydrop {
 
   async start() {
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
+      args: ["--no-sandbox", "--window-size=800,600"],
       headless: this.headless,
     });
 
-    fs.readdirSync("./cookies")
-      .filter((filename) => filename.endsWith(".json"))
-      .forEach(async (filename) => {
-        const context = await browser.createIncognitoBrowserContext();
-        const page = await context.newPage();
-        this.pages.push(page);
+    const files = fs
+      .readdirSync("./cookies")
+      .filter((filename) => filename.endsWith(".json"));
 
-        await page.setCookie(...require(`../cookies/${filename}`));
-        console.log(`Account ${filename} loaded`);
+    for (const file of files) {
+      const context = await browser.createIncognitoBrowserContext();
+      const page = await context.newPage();
+      this.pages.push(page);
 
-        await page.goto("https://key-drop.com/en/");
+      await page.setCookie(...require(`../cookies/${file}`));
+      console.log(`Account ${file} loaded`);
 
-        setInterval(this.claimDaily, 12 * 60 * 60 * 1000, context);
-        await this.claimDaily(context);
-      });
+      await page.goto("https://key-drop.com/en/");
+
+      setInterval(this.claimDaily, 12 * 60 * 60 * 1000, context);
+      await this.claimDaily(context);
+    }
   }
 
   wait(ms, maxErr = 100) {
