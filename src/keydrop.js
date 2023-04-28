@@ -5,7 +5,6 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 module.exports = class Keydrop {
   pages = [];
-  headless = 'new';
   selectors = {
     collect_button:
       "#promo-code-root > div > div.relative.grid.css-126rogm > div.relative.flex.flex-col.items-center.justify-center.col-start-1.row-start-1.px-10.py-5.text-center.transition-opacity.duration-500.md\\:px-20 > button",
@@ -20,8 +19,8 @@ module.exports = class Keydrop {
 
   async start() {
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--window-size=800,600"],
-      headless: this.headless,
+      args: ["--no-sandbox"],
+      headless: 'new',
     });
 
     const files = fs
