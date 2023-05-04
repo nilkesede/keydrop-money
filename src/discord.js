@@ -7,8 +7,8 @@ module.exports = class Discord {
     this.token = token;
   }
 
-  async getLastMessage(channel) {
-    const url = `channels/${channel}/messages?limit=1`;
+  async getLastMessages(channel, limit = 3) {
+    const url = `channels/${channel}/messages?limit=${limit}`;
 
     const { data } = await axios.get(`${this.baseUrl}${url}`, {
       withCredentials: true,
@@ -17,6 +17,6 @@ module.exports = class Discord {
       },
     });
 
-    return data[0];
+    return data;
   }
 };
