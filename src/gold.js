@@ -1,5 +1,6 @@
+const debug = require("debug")("keymoney:gold");
 const Discord = require("./discord");
-const debug = require('debug')('keymoney:gold');
+const { timeDiff } = require("./time");
 
 module.exports = class Gold {
   codes = [];
@@ -14,14 +15,11 @@ module.exports = class Gold {
     return messages.reduce((acc, message) => {
       const code = (message?.content ?? "").replace(/`/g, "");
       const time = new Date(message?.timestamp ?? "2023-01-01T00:00:00");
-      const timeDiff = Math.floor(
-        Math.abs(new Date().valueOf() - time.valueOf()) / 1000 / 60
-      );
 
       if (
         code.length === 17 &&
         !this.codes.includes(code) &&
-        timeDiff < 60 * 1
+        timeDiff(time) < 60
       ) {
         debug(`received new code: ${code}`);
         this.codes.push(code);

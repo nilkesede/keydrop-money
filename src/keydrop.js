@@ -4,6 +4,8 @@ const debug = require("debug")("keymoney:keydrop");
 const { default: puppeteer } = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
+const { wait, secondsToMs, hoursToMs } = require("./time");
+
 module.exports = class Keydrop {
   pages = [];
   indexURL = "https://key-drop.com/en/panel/profil/free-gold";
@@ -22,7 +24,7 @@ module.exports = class Keydrop {
   async start() {
     const browser = await puppeteer.launch({
       args: ["--no-sandbox"],
-      headless: 'new',
+      headless: "new",
     });
 
     const files = fs
@@ -37,10 +39,10 @@ module.exports = class Keydrop {
       await page.setCookie(...require(`../cookies/${file}`));
       debug(`account ${file} loaded`);
 
-      setInterval(this.verifyLogin.bind(this), 2 * 60 * 1000, page);
+      setInterval(this.verifyLogin.bind(this), hoursToMs(1), page);
       await this.verifyLogin(page);
 
-      setInterval(this.claimDaily.bind(this), 12 * 60 * 60 * 1000, context);
+      setInterval(this.claimDaily.bind(this), hoursToMs(12), context);
       await this.claimDaily(context);
     }
   }
@@ -55,15 +57,15 @@ module.exports = class Keydrop {
 
     try {
       const loginBtn = await page.waitForSelector("[data-login-link]", {
-        timeout: 5000,
+        timeout: secondsToMs(5),
       });
 
       if (loginBtn) {
         throw new Error("user logged out");
       }
     } catch (error) {
-      if (error.name === 'TimeoutError') {
-        debug('user logged in')
+      if (error.name === "TimeoutError") {
+        debug("user logged in");
         return;
       }
       throw error;
@@ -80,7 +82,7 @@ module.exports = class Keydrop {
     await page.waitForSelector(this.selectors.daily_open);
     await page.click(this.selectors.daily_open);
 
-    await this.wait(3000);
+    await wait(secondsToMs(3));
     await page.close();
   }
 
@@ -93,9 +95,9 @@ module.exports = class Keydrop {
     ]);
 
     await page.waitForSelector(this.selectors.collect_button);
-    await this.wait(3000);
+    await wait(secondsToMs(3));
     await page.click(this.selectors.collect_button);
-    await this.wait(1000);
+    await wait(secondsToMs(1));
     await page.goto(this.indexURL);
   }
 
@@ -104,12 +106,5 @@ module.exports = class Keydrop {
     await Promise.allSettled(
       this.pages.map((page) => this.redeemCodeOnPage(page, code))
     );
-  }
-
-  wait(ms, maxErr = 100) {
-    const time = Math.floor(ms + (Math.random() - 0.5) * 2 * maxErr);
-    return new Promise((resolve) => {
-      setTimeout(resolve, time);
-    });
   }
 };

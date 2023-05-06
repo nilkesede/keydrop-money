@@ -1,5 +1,5 @@
 const { default: axios } = require("axios");
-const debug = require('debug')('keymoney:discord');
+const debug = require("debug")("keymoney:discord");
 
 module.exports = class Discord {
   baseUrl = "https://discord.com/api/v10/";
