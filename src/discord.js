@@ -1,4 +1,5 @@
 const { default: axios } = require("axios");
+const debug = require('debug')('keymoney:discord');
 
 module.exports = class Discord {
   baseUrl = "https://discord.com/api/v10/";
@@ -8,6 +9,8 @@ module.exports = class Discord {
   }
 
   async getLastMessages(channel, limit = 3) {
+    debug(`getting last messages`);
+
     const url = `channels/${channel}/messages?limit=${limit}`;
 
     const { data } = await axios.get(`${this.baseUrl}${url}`, {

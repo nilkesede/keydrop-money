@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+const debug = require('debug')('keymoney:keydrop');
 const { default: puppeteer } = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
@@ -33,7 +34,7 @@ module.exports = class Keydrop {
       this.pages.push(page);
 
       await page.setCookie(...require(`../cookies/${file}`));
-      console.log(`Account ${file} loaded`);
+      debug(`account ${file} loaded`);
 
       await page.goto("https://key-drop.com/en/");
 
@@ -50,11 +51,11 @@ module.exports = class Keydrop {
   }
 
   async claimDaily(context) {
-    console.log("[Daily] Claiming daily case");
+    debug("claiming daily case");
 
     const dailyPage = await context.newPage();
     await dailyPage.goto("https://key-drop.com/en/Daily_free");
-    console.log("[Daily] Successfully reached daily page");
+    debug("successfully reached daily page");
 
     await dailyPage.waitForSelector(this.selectors.daily_open);
     await dailyPage.click(this.selectors.daily_open);
@@ -64,7 +65,7 @@ module.exports = class Keydrop {
   }
 
   async redeemCodeOnPage(page, code) {
-    console.log(`[Macro] Redirecting to https://key-drop.com/?code=${code}`);
+    debug(`redirecting to https://key-drop.com/?code=${code}`);
 
     await Promise.allSettled([
       page.goto(`https://key-drop.com/?code=${code}`),
@@ -77,7 +78,7 @@ module.exports = class Keydrop {
   }
 
   async redeem(code) {
-    console.log(`[Redeemer] Redeeming code ${code}`);
+    debug(`redeeming code ${code}`);
     await Promise.allSettled(
       this.pages.map((page) => this.redeemCodeOnPage(page, code))
     );
