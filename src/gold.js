@@ -21,7 +21,7 @@ module.exports = class Gold {
       if (
         code.length === 17 &&
         !this.codes.includes(code) &&
-        timeDiff < 60 * 3
+        timeDiff < 60 * 1
       ) {
         debug(`received new code: ${code}`);
         this.codes.push(code);

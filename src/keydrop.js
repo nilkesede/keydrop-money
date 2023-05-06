@@ -1,11 +1,12 @@
 const fs = require("fs");
 
-const debug = require('debug')('keymoney:keydrop');
+const debug = require("debug")("keymoney:keydrop");
 const { default: puppeteer } = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 module.exports = class Keydrop {
   pages = [];
+  indexURL = "https://key-drop.com/en/panel/profil/free-gold";
   selectors = {
     collect_button:
       "#promo-code-root > div > div.relative.grid.css-126rogm > div.relative.flex.flex-col.items-center.justify-center.col-start-1.row-start-1.px-10.py-5.text-center.transition-opacity.duration-500.md\\:px-20 > button",
@@ -36,32 +37,51 @@ module.exports = class Keydrop {
       await page.setCookie(...require(`../cookies/${file}`));
       debug(`account ${file} loaded`);
 
-      await page.goto("https://key-drop.com/en/");
+      setInterval(this.verifyLogin.bind(this), 2 * 60 * 1000, page);
+      await this.verifyLogin(page);
 
-      setInterval(this.claimDaily, 12 * 60 * 60 * 1000, context);
+      setInterval(this.claimDaily.bind(this), 12 * 60 * 60 * 1000, context);
       await this.claimDaily(context);
     }
   }
 
-  wait(ms, maxErr = 100) {
-    const time = Math.floor(ms + (Math.random() - 0.5) * 2 * maxErr);
-    return new Promise((resolve) => {
-      setTimeout(resolve, time);
-    });
+  async verifyLogin(page) {
+    debug("verifying login");
+
+    await Promise.all([
+      page.goto(this.indexURL),
+      page.waitForNavigation({ waitUntil: "domcontentloaded" }),
+    ]);
+
+    try {
+      const loginBtn = await page.waitForSelector("[data-login-link]", {
+        timeout: 5000,
+      });
+
+      if (loginBtn) {
+        throw new Error("user logged out");
+      }
+    } catch (error) {
+      if (error.name === 'TimeoutError') {
+        debug('user logged in')
+        return;
+      }
+      throw error;
+    }
   }
 
   async claimDaily(context) {
     debug("claiming daily case");
 
-    const dailyPage = await context.newPage();
-    await dailyPage.goto("https://key-drop.com/en/Daily_free");
+    const page = await context.newPage();
+    await page.goto("https://key-drop.com/en/Daily_free");
     debug("successfully reached daily page");
 
-    await dailyPage.waitForSelector(this.selectors.daily_open);
-    await dailyPage.click(this.selectors.daily_open);
+    await page.waitForSelector(this.selectors.daily_open);
+    await page.click(this.selectors.daily_open);
 
     await this.wait(3000);
-    await dailyPage.close();
+    await page.close();
   }
 
   async redeemCodeOnPage(page, code) {
@@ -75,6 +95,8 @@ module.exports = class Keydrop {
     await page.waitForSelector(this.selectors.collect_button);
     await this.wait(3000);
     await page.click(this.selectors.collect_button);
+    await this.wait(1000);
+    await page.goto(this.indexURL);
   }
 
   async redeem(code) {
@@ -82,5 +104,12 @@ module.exports = class Keydrop {
     await Promise.allSettled(
       this.pages.map((page) => this.redeemCodeOnPage(page, code))
     );
+  }
+
+  wait(ms, maxErr = 100) {
+    const time = Math.floor(ms + (Math.random() - 0.5) * 2 * maxErr);
+    return new Promise((resolve) => {
+      setTimeout(resolve, time);
+    });
   }
 };
