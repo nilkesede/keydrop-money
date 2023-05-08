@@ -24,7 +24,7 @@ module.exports = class Keydrop {
   async start() {
     const browser = await puppeteer.launch({
       args: ["--no-sandbox"],
-      headless: false,
+      headless: 'new',
     });
 
     const files = fs
@@ -45,8 +45,8 @@ module.exports = class Keydrop {
       setInterval(this.claimDaily.bind(this), hoursToMs(12), context);
       await this.claimDaily(context);
 
-      setInterval(this.enterGiveaways.bind(this), minutesToMs(5), context);
-      await this.enterGiveaways(context);
+      // setInterval(this.enterGiveaways.bind(this), minutesToMs(5), context);
+      // await this.enterGiveaways(context);
     }
   }
 
