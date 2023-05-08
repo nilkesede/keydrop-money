@@ -4,7 +4,7 @@ const debug = require("debug")("keymoney:keydrop");
 const { default: puppeteer } = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
-const { wait, secondsToMs, hoursToMs } = require("./time");
+const { wait, secondsToMs, hoursToMs, minutesToMs } = require("./time");
 
 module.exports = class Keydrop {
   pages = [];
@@ -24,7 +24,7 @@ module.exports = class Keydrop {
   async start() {
     const browser = await puppeteer.launch({
       args: ["--no-sandbox"],
-      headless: "new",
+      headless: false,
     });
 
     const files = fs
@@ -44,6 +44,9 @@ module.exports = class Keydrop {
 
       setInterval(this.claimDaily.bind(this), hoursToMs(12), context);
       await this.claimDaily(context);
+
+      setInterval(this.enterGiveaways.bind(this), minutesToMs(5), context);
+      await this.enterGiveaways(context);
     }
   }
 
@@ -76,7 +79,7 @@ module.exports = class Keydrop {
     debug("claiming daily case");
 
     const page = await context.newPage();
-    await page.goto("https://key-drop.com/en/Daily_free");
+    await page.goto("https://key-drop.com/en/daily-case");
     debug("successfully reached daily page");
 
     await page.waitForSelector(this.selectors.daily_open);
@@ -106,5 +109,45 @@ module.exports = class Keydrop {
     await Promise.allSettled(
       this.pages.map((page) => this.redeemCodeOnPage(page, code))
     );
+  }
+
+  async enterGiveaway(index, page) {
+    try {
+      debug(`entering giveaway ${index}`);
+
+      await page.waitForSelector(
+        `#giveaways-root > div > div > div:nth-child(3) .grid .grid-stack:nth-child(${index}) a.button-light-green`,
+        { timeout: secondsToMs(3) }
+      );
+      await wait(secondsToMs(1));
+      await page.click(
+        `#giveaways-root > div > div > div:nth-child(3) .grid .grid-stack:nth-child(${index}) a.button-light-green`
+      );
+
+      await page.waitForSelector(
+        "#giveaways-root > div > div > div > div:nth-child(4)>div:nth-child(1)>div:nth-child(2) button",
+        { timeout: secondsToMs(3) }
+      );
+      await wait(secondsToMs(1));
+      await page.click(
+        "#giveaways-root > div > div > div > div:nth-child(4)>div:nth-child(1)>div:nth-child(2) button"
+      );
+      await wait(secondsToMs(3));
+    } catch (error) {
+      debug("cannot enter giveaway");
+    }
+  }
+
+  async enterGiveaways(context) {
+    debug("entering giveaways");
+
+    const page = await context.newPage();
+
+    for (let index = 5; index > 0; index--) {
+      await page.goto("https://key-drop.com/en/giveaways/list");
+      await this.enterGiveaway(index, page);
+    }
+
+    page.close();
   }
 };
