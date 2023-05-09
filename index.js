@@ -17,7 +17,7 @@ async function start() {
         await keydrop.redeem(goldenCode);
       }
     }
-    await wait(secondsToMs(25), 1000);
+    await wait(secondsToMs(30), 1000);
   }
 }
 
