@@ -7,7 +7,7 @@ const { wait, secondsToMs } = require("./src/time");
 const keydrop = new Keydrop();
 const gold = new Gold();
 
-async function start() {
+(async function () {
   await keydrop.start();
 
   while (true) {
@@ -17,8 +17,6 @@ async function start() {
         await keydrop.redeem(goldenCode);
       }
     }
-    await wait(secondsToMs(30), 1000);
+    await wait(secondsToMs(32), 1000);
   }
-}
-
-start();
+})();
